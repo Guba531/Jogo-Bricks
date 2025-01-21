@@ -1,0 +1,24 @@
+/*Estilização Basica Do CSS*/
+body {
+    display: flex; /* Define o layout como flexível para facilitar o alinhamento */
+    flex-direction: column; /* Organiza os elementos em uma coluna (verticalmente) */
+    align-items: center; /* Centraliza os elementos horizontalmente */
+    justify-content: center; /* Centraliza os elementos verticalmente */
+    font-family: Arial, Helvetica, sans-serif; /* Define a fonte padrão para o texto */
+    margin: 0; /* Remove as margens padrão do navegador */
+    height: 100vh; /* Define a altura da página como 100% da altura da janela de visualização */
+    background-color: moccasin; /* Define uma cor de fundo clara para a página */
+}
+/* Estilização do título principal */
+h1 {
+    margin-bottom: 20px; /* Adiciona um espaço abaixo do título */
+}
+/* Estilização do elemento <canvas> */
+canvas {
+    border: 2px solid #000; /* Adiciona uma borda preta de 2px ao redor do canvas */
+    background-color: rgb(0, 0, 0); /* Define um fundo branco para o canvas */
+}
+
+
+
+
