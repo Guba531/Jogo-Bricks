@@ -44,4 +44,49 @@ requestAnimationFrame(update);
 }
 
 //Inicia o loop de atualização
-update();
+update() {
+  clearCanvas();
+  movePaddle();
+  drawPaddle();
+  requestAnimaLionFrame(update);
+}
+
+//Eventos de Teclado para ativar o movimento
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    isMovingLeft = true;
+    console.log(`Tecla pressionada: ${e.key}`);
+    console.log(`isMovingLeft: ${isMovingLeft}, isMovingRight: ${isMovingRight}`); 
+  }
+  if (e.key === 'd') {
+    isMovingRight = true;
+    console.log(`Tecla pressionada ${e.key}`);
+    console.log(`isMovingLeft: ${isMovingLeft}, isMovingRight: ${isMovingRight}`);
+  }
+});
+
+//Eventos de Teclado para desativar o movimento
+document.addEventListener('keyup', (e) => {
+  if (e.key === 'ArrowLeft' || e.key === 'a') {
+    isMovingLeft = false;
+} 
+ if (e.key === 'ArrowRight' || e.key === 'd') {
+  isMovingRight = false;
+}
+});
+
+/* Os eventos keydownsão keyupusados ​​para detectar quando uma tecla é pressionada e quando ela é solta,
+permitindo controlar ações no jogo, como movimentação de personagens ou objetos.*/
+//Função para mover o paddle
+function movePaddle() {
+  if (isMovingLeft && paddleX > 0) {
+    paddleX -= paddleSpeed;
+  }
+  if (isMovingRight && paddleX < canvas.width - paddleWidth) {
+    paddleX += paddleSpeed;
+  }
+  console.log("Posição X do Paddle:", paddleX);
+}
+
+//Inicia o loop de atualização
+update(); 
