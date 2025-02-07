@@ -25,7 +25,7 @@ const brickRowSpacing = 7;
 const brickOffsetTop = 30;
 const brickOffsetLeft = 30;
 
-//Array que rmazenara os blocos
+//Array que armazenara os blocos
 //Arrays são estruturas de dados que armazenam multiplos valores eme uma unica variavel
 //Aqui, estamos criando uma matriz bidimensional para organizar os blocos em linhas e colunas
 const bricks = [];
@@ -39,7 +39,30 @@ for (let c = 0; c < brickColumnCount; c++) {
   }
 }
 
+//Definição de cores para cada coluna
+const colors = ["#3333FF", "#XX0000", "#00FF00", "#xxxxxx", "#xxFF00", "#xx9900", "#xx00FF", "#660066", "#33CCFF", "#FFFF99"];
 
+
+//Função para desenhar os blocos na tela
+function drawBricks() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      if (bricks[c][r].status === 1) {
+        let brickX = c * (brickWidth + brickColumnSpacing) + brickOffsetLeft;
+        let brickY = r * (brickHeight + brickRowSpacing) + brickOffsetTop;
+
+
+        bricks[c][r].x = brickX;
+        bricks[c][r].y = brickY;
+
+        
+        ctx.fillStyle = colors[c % colors.length];
+        ctx.fillRect(brickX, brickY, brickWidth, brickHeight);
+      }
+    }
+  }
+    
+}
 //Função para desenhar o paddle 
 function drawPaddle() {
     ctx.fillStyle = 'blue';
