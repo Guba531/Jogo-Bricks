@@ -46,13 +46,13 @@ for (let c = 0; c < brickColumnCount; c++) { //Para (for) definir c menor que as
   bricks[c] = []; //Define c como bricks
   for (let r = 0; r < brickRowCount; r++) { //Para definir r menor que as colunas de tijolos
     let brickX = brickOffsetLeft + c * (brickWidth + brickColumnSpacing); //brickX igual brickOffsetLeft mais c e brickWidth mais brickColumnSpacing
-    let brickY = brickOffsetTop + r * (brickHeight + brickColumnSpacing);
+    let brickY = brickOffsetTop + r * (brickHeight + brickRowSpacing);
     bricks[c][r] = { x: brickX, y: brickY, status: 1 };
   }
 }
 
 //Definição de cores para cada coluna
-const colors = ["#3333FF", "#FF0000", "#00FF00", "#FFFF00", "#FF9900", "#9900FF", "#660066", "#33CCFF", "#FFFF99"];
+const colors = ["#FF5733", "#33FF57", "#3357FF", "#FF33A8", "#FFD700", "#00CED1", "#9400D3", "#FF4500", "#7FFF00", "#DC143C"];
 
 
 //Função para desenhar os blocos na tela
@@ -105,12 +105,12 @@ document.addEventListener('keydown', (e) => {
     console.log(`Tecla pressionada: ${e.key}`);
     console.log(`isMovingLeft: ${isMovingLeft}, isMovingRight: ${isMovingRight}`); 
   }
-  if (e.key === 'ArrowRight' || e.key === 'd') 
+  if (e.key === 'ArrowRight' || e.key === 'd') {
     isMovingRight = true;
     console.log(`Tecla pressionada ${e.key}`);
     console.log(`isMovingLeft: ${isMovingLeft}, isMovingRight: ${isMovingRight}`);
   }
-);
+});
 
 //Eventos de Teclado para desativar o movimento
 document.addEventListener('keyup', (e) => {
@@ -122,7 +122,7 @@ document.addEventListener('keyup', (e) => {
 }
 });
 
-/* Os eventos keydownsão keyupusados ​​para detectar quando uma tecla é pressionada e quando ela é solta,
+/* Os eventos keydown são key up usados ​​para detectar quando uma tecla é pressionada e quando ela é solta,
 permitindo controlar ações no jogo, como movimentação de personagens ou objetos.*/
 //Função para mover o paddle
 function movePaddle() {
@@ -136,12 +136,64 @@ function movePaddle() {
 }
 
 //Função para desenhar bola
-function drewBall() {
+function drawBall() {
   ctx.beginPath();
   ctx.arc(ballX, ballY, ballRadius, 0, Math.PI *2);
   ctx.fillStyle = "white";
   ctx.fill();
   ctx.closePath();
+}
+
+//Função para detectar colisão entre a bola e os blocos
+function collisionDetection() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      let b = bricks[c][r];
+      if (b.status === 1) {
+        if (ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight) {
+          b.status = 0;
+          hitBrickSound.play();
+        }
+      }
+    }
+  }
+}
+
+//Função de mover a bola e verificar colisões aula 6 ou 7
+function moveBall() {
+  ballX += ballSpeedX;
+  ballY += ballSpeedY;
+
+  //Colisão com paredes laterais
+  if (ballX + ballRadius > canvas.width || ballX - ballRadius < 0) {
+    ballSpeedX = -ballSpeedX;
+    hitWallSound.play();
+  }
+
+  //Colisão com o topo
+  if (ballY - ballRadius < 0) {
+    ballSpeedY = -ballSpeedY;
+   hitWallSound.play();
+  }
+
+  //Colisão com o paddle
+  if (
+    ballY + ballRadius >= canvas.height - paddleHeight - 10 && // Considera a borda superior do paddle
+    ballY + ballRadius <= canvas.height - paddleHeight && // Evita que bola "atravesse" antes de inverter
+    ballX > paddleX &&
+    ballX < paddleX + paddleWidth
+  ) {
+    ballY = canvas.height - paddleHeight - 10 - ballRadius; //  Ajusta a posição da bola no impacto
+    ballSpeedY = -ballSpeedY; // Inverte a direção da bola
+    hitPaddleSound.play();
+  }
+
+  // Se a bola cair na parte inferior do canvas (perde vida)
+  if (ballY + ballRadius > canvas.height) {
+    console.log("Voce perdeu!");
+    loseSound.play();
+    document.location.reload(); //  Reinicia o jogo
+  }
 }
 //Inicia o loop de atualização
 update();
