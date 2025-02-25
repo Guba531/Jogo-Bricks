@@ -37,6 +37,12 @@ const hitBrickSound = new Audio('sounds/hitting-brick.wav');
 const hitPaddleSound = new Audio('sounds/hitting-paddle.wav');
 const hitWallSound = new Audio('sounds/hitting-wall.wav');
 const loseSound = new Audio('sounds/lose.mp3');
+const victorySound = new Audio('sounds/victory.wav');
+const backgroundMusic = new Audio('sounds/background.mp3');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.3;
+backgroundMusic.play();
+
 //Array que armazenara os blocos
 //Arrays são estruturas de dados que armazenam multiplos valores eme uma unica variavel
 //Aqui, estamos criando uma matriz bidimensional para organizar os blocos em linhas e colunas
@@ -194,6 +200,30 @@ function moveBall() {
     loseSound.play();
     document.location.reload(); //  Reinicia o jogo
   }
+}
+
+//Função para verificar se todos os blocos foram destruidos
+function checkWinConditio() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      if (bricks[c][r].status === 1) {
+        return false; //Ainda existem blocos ativos, o jogo continua
+      }
+    }
+  }
+  return true; //Todos os blocos foram destruidos, o jogador venceu
+}
+
+// **Função para exibir tela de vitoria**
+function winGame() {
+  backgroundMusic.pause(); // Para musica de fundo
+  victorySound.play(); // Toca som de vitoria
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
+  ctx.fillStyle = "#00FF00"; // Cor do texto
+  ctx,font = "40px Arial";
+  ctx.fillText("Voce Venceu!", canvas.width / 2 - 100, canvas.height / 2);
+  ctx.fillText("Parabens!", canvas.width / 2 - 100, canvas.height / 2 + 50);
+  return;
 }
 //Inicia o loop de atualização
 update();
