@@ -167,39 +167,57 @@ function collisionDetection() {
 
 //Função de mover a bola e verificar colisões aula 6 ou 7
 function moveBall() {
-  ballX += ballSpeedX;
-  ballY += ballSpeedY;
+  //Previsão da proxima posição da bola
+ let nextBallX = ballX + ballSpeedX;
+  let nextBallY = ballY + ballSpeedY;
 
-  //Colisão com paredes laterais
-  if (ballX + ballRadius > canvas.width || ballX - ballRadius < 0) {
-    ballSpeedX = -ballSpeedX;
+  // verificação da colisão com paredes laterais
+  if (nextBallX + ballRadius > canvas.width) { // Se a bola atingir o lado direito
+    ballX = canvas.width - ballRadius; // Ajusta a posição para ficar dentro da tela
+    ballSpeedX = -Math.abs(ballSpeedX); // Inverte a direção horizontal
+    hitWallSound.play(); // Reproduz o som da colisão
+  }
+
+  if (nextBallX - ballRadius < 0) { // Se a bola atingir o lado esquerdo
+    ballX = canvas.width - ballRadius; // Ajusta a posição para ficar dentro da tela
+    ballSpeedX = -Math.abs(ballSpeedX); // Inverte a direção horizontal
+    hitWallSound.play(); // Reproduz o som da colisão
+  } 
+
+  //Verificação de colisão com o topo da tela
+  if (nextBallY - ballRadius < 0) { //Se a bola atingir o topo
+    ballY = ballRadius; // Ajusta a posição para não ultrapassar o topo
+    ballSpeedY = Math.abs(ballSpeedY); //Inverte a direção vertical
     hitWallSound.play();
   }
 
-  //Colisão com o topo
-  if (ballY - ballRadius < 0) {
-    ballSpeedY = -ballSpeedY;
-   hitWallSound.play();
-  }
-
-  //Colisão com o paddle
+  //Verificação de colisão com o paddle usando interpolação (evita atravessar o paddle)
   if (
-    ballY + ballRadius >= canvas.height - paddleHeight - 10 && // Considera a borda superior do paddle
-    ballY + ballRadius <= canvas.height - paddleHeight && // Evita que bola "atravesse" antes de inverter
-    ballX > paddleX &&
+    ballY + ballRadius <= 530 && // A bola ainda não passou pelo paddle
+    nextBallY + ballRadius >= 530 && // A proxima posição da bola cruzaria o paddle
+    ballX > paddleX && // A bola esta dentro da largura do paddle
     ballX < paddleX + paddleWidth
   ) {
-    ballY = canvas.height - paddleHeight - 10 - ballRadius; //  Ajusta a posição da bola no impacto
-    ballSpeedY = -ballSpeedY; // Inverte a direção da bola
-    hitPaddleSound.play();
+    ballY = 530 - ballRadius; // Ajusta a posição da bola pra cima do paddle
+    ballSpeedY = -Math.abs(ballSpeedY);
+
+    //Efeito angular no rebote (faz a bola mudar de direção dependendo de onde bateu no paddle)
+    let impactPoint = ballX - (paddleX + paddleWidth / 2); //Distancia do centro do paddle
+    let normalizedImpact = impactPoint / (paddleWidth / 2); // Normaliza o impacto (-1 a 1)
+    ballSpeedX = normalizedImpact * 5; //Define nova velocidade horizontal
+
+    hitPaddleSound.play(); // Reproduz som da colisão com o paddle
   }
 
-  // Se a bola cair na parte inferior do canvas (perde vida)
-  if (ballY + ballRadius > canvas.height) {
+  //  Verificação se a bola cair na parte inferior do canvas (perde vida)
+  if (nextBallY + ballRadius > canvas.height) {
     console.log("Voce perdeu!");
     loseSound.play();
-    document.location.reload(); //  Reinicia o jogo
   }
+
+  //Atualiza a posição da bola com os valores previstos
+  ballX = nextBallX;
+  ballY = nextBallY;
 }
 
 //Função para verificar se todos os blocos foram destruidos
@@ -225,5 +243,7 @@ function winGame() {
   ctx.fillText("Parabens!", canvas.width / 2 - 100, canvas.height / 2 + 50);
   return;
 }
+
+
 //Inicia o loop de atualização
 update();
