@@ -29,8 +29,8 @@ const brickOffsetLeft = 30; //Valor do espaço entre a esquerda e tijolos
 let ballX = canvas.width / 2;
 let ballY = canvas.height - 30;
 let ballRadius = 8;
-let ballSpeedX = 4;
-let ballSpeedY = 4;
+let ballSpeedX = 5;
+let ballSpeedY = -5;
 
 //Carregar sons para os enventos do jogo aula 6
 const hitBrickSound = new Audio('sounds/hitting-brick.wav');
@@ -41,7 +41,6 @@ const victorySound = new Audio('sounds/victory.wav');
 const backgroundMusic = new Audio('sounds/background.mp3');
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.3;
-backgroundMusic.play();
 
 //Array que armazenara os blocos
 //Arrays são estruturas de dados que armazenam multiplos valores eme uma unica variavel
@@ -84,7 +83,7 @@ function drawBricks() {
 //Função para desenhar o paddle 
 function drawPaddle() {
     ctx.fillStyle = 'blue';
-    ctx.fillRect(paddleX, 550, 100, 10);
+    ctx.fillRect(paddleX, canvas.height - paddleHeight - 10, paddleWidth, paddleHeight);
  }
 
 
@@ -101,6 +100,9 @@ ctx.clearRect(0, 0, canvas.width, canvas.height);
   movePaddle();
   drawPaddle();
   drawBall();
+  drawBricks();
+  moveBall();
+  collisionDetection();
   requestAnimationFrame(update);
 }
 
@@ -156,9 +158,16 @@ function collisionDetection() {
     for (let r = 0; r < brickRowCount; r++) {
       let b = bricks[c][r];
       if (b.status === 1) {
-        if (ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight) {
-          b.status = 0;
-          hitBrickSound.play();
+        if (
+          ballX > b.x &&
+          ballX < b.x + brickWidth &&
+          ballY > b.y &&
+          ballY < b.y + brickHeight
+        ) {
+          ballSpeedY = -ballSpeedY; //inverte a direção da bola
+          b.status = 0; //remove o bloco ao acertar
+          hitBrickSound.play(); //reproduz o som da colisão
+          if (checkWin()) return; //verifica se venceu apos destruir o bloco
         }
       }
     }
@@ -179,8 +188,8 @@ function moveBall() {
   }
 
   if (nextBallX - ballRadius < 0) { // Se a bola atingir o lado esquerdo
-    ballX = canvas.width - ballRadius; // Ajusta a posição para ficar dentro da tela
-    ballSpeedX = -Math.abs(ballSpeedX); // Inverte a direção horizontal
+    ballX = ballRadius; // Ajusta a posição para ficar dentro da tela
+    ballSpeedX = Math.abs(ballSpeedX); // Inverte a direção horizontal
     hitWallSound.play(); // Reproduz o som da colisão
   } 
 
@@ -212,7 +221,7 @@ function moveBall() {
   //  Verificação se a bola cair na parte inferior do canvas (perde vida)
   if (nextBallY + ballRadius > canvas.height) {
     console.log("Voce perdeu!");
-    loseSound.play();
+    loseGame(); // chama a função que trata o fim do jogo
   }
 
   //Atualiza a posição da bola com os valores previstos
@@ -220,30 +229,69 @@ function moveBall() {
   ballY = nextBallY;
 }
 
-//Função para verificar se todos os blocos foram destruidos
-function checkWinConditio() {
-  for (let c = 0; c < brickColumnCount; c++) {
-    for (let r = 0; r < brickRowCount; r++) {
-      if (bricks[c][r].status === 1) {
-        return false; //Ainda existem blocos ativos, o jogo continua
-      }
-    }
-  }
-  return true; //Todos os blocos foram destruidos, o jogador venceu
+let gameLost = false;
+
+// função para verificar derrota
+function loseGame() {
+  backgroundMusic.pause();
+  loseSound.play();
+  gameLost = true; // define que o jogo acabou
+
+  // limpa a tela e exibe mensagem de derrota
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "#FF0000"; // cor do texto
+  ctx.font = "40px Arial";
+  ctx.fillText("Você perdeu!", canvas.width / 2 - 100, canvas.height / 2);
+  ctx.fillText("Tente novamente!", canvas.width / 2 - 100, canvas.height / 2 + 50);
 }
+
+// variavel para indicar se o jogo foi vencido
+let gameWon = false;
 
 // **Função para exibir tela de vitoria**
 function winGame() {
   backgroundMusic.pause(); // Para musica de fundo
   victorySound.play(); // Toca som de vitoria
+  gameWon = true;
+
+  // limpa a tela e exibe mensagem de vitoria
   ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
   ctx.fillStyle = "#00FF00"; // Cor do texto
-  ctx,font = "40px Arial";
+  ctx.font = "40px Arial";
   ctx.fillText("Voce Venceu!", canvas.width / 2 - 100, canvas.height / 2);
   ctx.fillText("Parabens!", canvas.width / 2 - 100, canvas.height / 2 + 50);
   return;
 }
 
+// função para verificar a vitoria
+function checkWin() {
+  for (let c = 0; c < brickColumnCount; c++) {
+    for (let r = 0; r < brickRowCount; r++) {
+      if (bricks[c][r].status === 1) {
+        return false; // ainda ha blocos ativos, o jogo continua
+      }
+    }
+  }
+  winGame(); // chame a função de vitoria se todos os blocos foram destruidos
+  return true;
+}
+
+// Evento de clique para garantir que o áudio comece a ser reproduzido
+document.addEventListener("click", function() {
+  // Desbloquear todos os sons no primeiro clique
+  hitBrickSound.play().catch(()=>{}); hitBrickSound.pause(); hitBrickSound.currentTime = 0;
+  hitPaddleSound.play().catch(()=>{}); hitPaddleSound.pause(); hitPaddleSound.currentTime = 0;
+  hitWallSound.play().catch(()=>{}); hitWallSound.pause(); hitWallSound.currentTime = 0;
+  loseSound.play().catch(()=>{}); loseSound.pause(); loseSound.currentTime = 0;
+  victorySound.play().catch(()=>{}); victorySound.pause(); victorySound.currentTime = 0;
+  backgroundMusic.play().catch(()=>{}); backgroundMusic.pause(); backgroundMusic.currentTime = 0;
+
+  // Agora que todos estão desbloqueados, pode iniciar a música de fundo
+  backgroundMusic.play().catch(error => {
+      console.log("Reprodução de áudio bloqueada:", error);
+  });
+}, { once: true });
+// Ouvinte de evento acionado apenas uma vez
 
 //Inicia o loop de atualização
 update();
